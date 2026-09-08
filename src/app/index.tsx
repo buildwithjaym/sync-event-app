@@ -1,98 +1,329 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect, useRef } from "react";
+import {
+  StyleSheet,
+  Animated,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
 
 export default function HomeScreen() {
+
+  // Animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(40)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+
+  useEffect(() => {
+
+
+    // Entrance animation
+    Animated.parallel([
+
+      Animated.timing(fadeAnim,{
+        toValue:1,
+        duration:1000,
+        useNativeDriver:true
+      }),
+
+      Animated.spring(slideAnim,{
+        toValue:0,
+        friction:7,
+        useNativeDriver:true
+      }),
+
+      Animated.spring(scaleAnim,{
+        toValue:1,
+        friction:6,
+        useNativeDriver:true
+      })
+
+    ]).start();
+
+
+
+    // Logo breathing animation
+
+    Animated.loop(
+
+      Animated.sequence([
+
+        Animated.timing(pulseAnim,{
+          toValue:1.08,
+          duration:1500,
+          useNativeDriver:true
+        }),
+
+        Animated.timing(pulseAnim,{
+          toValue:1,
+          duration:1500,
+          useNativeDriver:true
+        })
+
+      ])
+
+    ).start();
+
+
+
+  },[]);
+
+
+
   return (
+
     <ThemedView style={styles.container}>
+
       <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
+
+
+        <Animated.View
+          style={[
+            styles.content,
+            {
+              opacity:fadeAnim,
+              transform:[
+                {
+                  translateY:slideAnim
+                }
+              ]
+            }
+          ]}
+        >
+
+
+          {/* LOGO */}
+
+          <Animated.View
+            style={[
+              styles.logoContainer,
+              {
+                transform:[
+                  {
+                    scale:scaleAnim
+                  },
+                  {
+                    scale:pulseAnim
+                  }
+                ]
+              }
+            ]}
+          >
+
+            <ThemedText style={styles.logo}>
+              S
+            </ThemedText>
+
+
+          </Animated.View>
+
+
+
+
+          {/* BRAND */}
+
+          <ThemedText style={styles.brand}>
+            SYNC
           </ThemedText>
-        </ThemedView>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
 
-        {Platform.OS === 'web' && <WebBadge />}
+          <ThemedText style={styles.tagline}>
+
+            One Identity.
+            {"\n"}
+            Every Event.
+
+          </ThemedText>
+
+
+
+
+          <ThemedText style={styles.description}>
+
+            Your digital participation passport
+            {"\n"}
+            for every activity.
+
+          </ThemedText>
+
+
+
+
+          {/* BUTTON */}
+
+          <TouchableOpacity
+            style={styles.button}
+          >
+
+            <ThemedText style={styles.buttonText}>
+              Create Identity
+            </ThemedText>
+
+          </TouchableOpacity>
+
+
+
+          <TouchableOpacity>
+
+            <ThemedText style={styles.secondary}>
+              Already have an identity?
+            </ThemedText>
+
+          </TouchableOpacity>
+
+
+
+        </Animated.View>
+
+
       </SafeAreaView>
+
+
     </ThemedView>
+
   );
 }
 
+
+
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
+
+container:{
+  flex:1,
+},
+
+
+safeArea:{
+  flex:1,
+  justifyContent:"center",
+  alignItems:"center",
+},
+
+
+content:{
+  alignItems:"center",
+  paddingHorizontal:30,
+},
+
+
+
+logoContainer:{
+
+  width:120,
+  height:120,
+
+  borderRadius:60,
+
+  backgroundColor:"#F97316",
+
+  justifyContent:"center",
+  alignItems:"center",
+
+  marginBottom:30,
+
+  shadowColor:"#F97316",
+  shadowOpacity:0.3,
+  shadowRadius:20,
+
+},
+
+
+
+logo:{
+
+  color:"#FFFFFF",
+
+  fontSize:60,
+
+  fontWeight:"900",
+
+},
+
+
+
+brand:{
+
+  fontSize:38,
+
+  fontWeight:"900",
+
+  letterSpacing:5,
+
+},
+
+
+
+tagline:{
+
+  marginTop:20,
+
+  textAlign:"center",
+
+  fontSize:28,
+
+  fontWeight:"800",
+
+},
+
+
+
+description:{
+
+  marginTop:20,
+
+  textAlign:"center",
+
+  opacity:0.6,
+
+  fontSize:16,
+
+},
+
+
+
+button:{
+
+  marginTop:50,
+
+  backgroundColor:"#F97316",
+
+  paddingVertical:16,
+
+  paddingHorizontal:60,
+
+  borderRadius:30,
+
+},
+
+
+
+buttonText:{
+
+  color:"#FFFFFF",
+
+  fontSize:16,
+
+  fontWeight:"700",
+
+},
+
+
+
+secondary:{
+
+  marginTop:25,
+
+  opacity:0.6,
+
+}
+
+
 });
